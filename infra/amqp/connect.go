@@ -11,11 +11,11 @@ type ConfigAMQP struct {
 	Username string
 	Password string
 	Host     string
-	Port     int
+	Port     string
 }
 
 func (a ConfigAMQP) String() string {
-	return fmt.Sprintf("%s://%s:%s@%s:%d/",
+	return fmt.Sprintf("%s://%s:%s@%s:%s/",
 		a.Protocol,
 		a.Username,
 		a.Password,
