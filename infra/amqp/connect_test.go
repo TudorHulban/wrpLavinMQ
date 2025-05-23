@@ -3,23 +3,23 @@ package connection
 import (
 	"testing"
 
-	"github.com/TudorHulban/wrpLavinMQ/domain/configurationtest"
+	"github.com/TudorHulban/wrpLavinMQ/configuration"
 	"github.com/stretchr/testify/require"
 )
 
-var _ConfigLocal = ConfigAMQP{
-	Protocol: "amqp",
-	Username: "guest",
-	Password: "guest",
-	Host:     "localhost",
-	Port:     "5672",
-}
-
 func TestConnect(t *testing.T) {
-	config, errConfig := configurationtest.NewConfigurationTest()
+	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
-	conn, errConnect := Connect(&_ConfigLocal)
+	conn, errConnect := Connect(
+		&ConfigAMQP{
+			Protocol: config.GetValue(configuration.ConfigAMQPProtocol),
+			Username: config.GetValue(configuration.ConfigAMQPUserName),
+			Password: config.GetValue(configuration.ConfigAMQPPassword),
+			Host:     config.GetValue(configuration.ConfigAMQPHost),
+			Port:     config.GetValue(configuration.ConfigAMQPPort),
+		},
+	)
 	require.NoError(t, errConnect)
 
 	defer conn.Close()
