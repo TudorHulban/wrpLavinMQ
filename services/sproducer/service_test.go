@@ -9,6 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	_NameExchange = "exchange12345"
+	_NameQueue    = "queue12345"
+)
+
 func TestService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
@@ -31,6 +36,22 @@ func TestService(t *testing.T) {
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
+	require.NoError(t,
+		service.DeclareExchange(
+			&ParamsDeclareExchange{
+				Name:    _NameExchange,
+				Kind:    "direct", // TODO: add type constants.
+				Durable: true,
+			},
+		),
+	)
+	// require.NoError(t,
+	// 	service.DeclareQueue(
+	// 		&ParamsDeclareQueue{
+	// 			Name: _NameQueue,
+	// 		},
+	// 	),
+	// )
 
 	evA := events.EventA{
 		MetricLabel: "jitter",
@@ -41,11 +62,14 @@ func TestService(t *testing.T) {
 	require.NoError(t, errSerialize)
 	require.NotZero(t, json)
 
-	errPublish := service.PublishMessageJSON(
-		&ParamsPublishMessageJSON{
-			Queue:       "test",
-			EventAsJSON: json,
-		},
+	require.NoError(t,
+		service.PublishMessageJSON(
+			&ParamsPublishMessageJSON{
+				Exchange: _NameExchange,
+				Queue:    _NameQueue,
+
+				EventAsJSON: json,
+			},
+		),
 	)
-	require.NoError(t, errPublish)
 }

@@ -11,8 +11,8 @@ func NewConfigurationTest() (*ConfigurationTest, error) {
 	return &ConfigurationTest{
 			configuration: map[string]string{
 				ConfigAMQPProtocol: "amqp",
-				ConfigAMQPUserName: "guest",
-				ConfigAMQPPassword: "guest",
+				ConfigAMQPUserName: "gtest",
+				ConfigAMQPPassword: "gtest",
 
 				ConfigAMQPHost: "localhost",
 				ConfigAMQPPort: "5672",
