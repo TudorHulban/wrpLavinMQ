@@ -32,7 +32,7 @@ func Connect(config *ConfigAMQP) (*amqp.Connection, error) {
 
 	log.Print(url)
 
-	connection, errConnection := amqp.Dial(config.String())
+	connection, errConnection := amqp.Dial(url)
 	if errConnection != nil {
 		return nil,
 			errConnection

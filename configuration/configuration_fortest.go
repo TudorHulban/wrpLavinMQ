@@ -16,6 +16,8 @@ func NewConfigurationTest() (*ConfigurationTest, error) {
 
 				ConfigAMQPHost: "localhost",
 				ConfigAMQPPort: "5672",
+
+				ConfigAMQPVirtualHost: "gtest_host",
 			},
 		},
 		nil

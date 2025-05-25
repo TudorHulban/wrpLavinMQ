@@ -2,20 +2,25 @@
   "rabbit_version": "3.12.0",
   "users": [
     {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator" 
+    },
+    {
       "name": "gtest",
       "password": "gtest",
-      "tags": "management"
+      "tags": "management,administrator" 
     }
   ],
   "vhosts": [
     {
-      "name": "/gtest_host"
+      "name": "gtest_host"
     }
   ],
   "permissions": [
     {
       "user": "gtest",
-      "vhost": "/gtest_host",
+      "vhost": "gtest_host",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -26,7 +31,7 @@
   "exchanges": [
     {
       "name": "ex12345",
-      "vhost": "/gtest_host",
+      "vhost": "gtest_host",
       "type": "direct",
       "durable": true,
       "auto_delete": false,
@@ -37,7 +42,14 @@
   "queues": [
     {
       "name": "q12345",
-      "vhost": "/gtest_host",
+      "vhost": "gtest_host",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "q67890",
+      "vhost": "gtest_host",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
@@ -46,10 +58,18 @@
   "bindings": [
     {
       "source": "ex12345",
-      "vhost": "/gtest_host",
+      "vhost": "gtest_host",
       "destination": "q12345",
       "destination_type": "queue",
       "routing_key": "q12345",
+      "arguments": {}
+    },
+    {
+      "source": "ex12345",
+      "vhost": "gtest_host",
+      "destination": "q67890",
+      "destination_type": "queue",
+      "routing_key": "q67890",
       "arguments": {}
     }
   ]

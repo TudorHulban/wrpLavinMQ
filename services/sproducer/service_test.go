@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// queue binding to the exchange was done in definitions file. see ops folder.
 const (
-	_NameExchange = "exchange12345"
-	_NameQueue    = "queue12345"
+	_NameExchange = "ex12345"
+	_NameQueue    = "q12345"
 )
 
 func TestService(t *testing.T) {
@@ -20,11 +21,12 @@ func TestService(t *testing.T) {
 
 	conn, errConnect := connection.Connect(
 		&connection.ConfigAMQP{
-			Protocol: config.GetValue(configuration.ConfigAMQPProtocol),
-			Username: config.GetValue(configuration.ConfigAMQPUserName),
-			Password: config.GetValue(configuration.ConfigAMQPPassword),
-			Host:     config.GetValue(configuration.ConfigAMQPHost),
-			Port:     config.GetValue(configuration.ConfigAMQPPort),
+			Protocol:    config.GetValue(configuration.ConfigAMQPProtocol),
+			Username:    config.GetValue(configuration.ConfigAMQPUserName),
+			Password:    config.GetValue(configuration.ConfigAMQPPassword),
+			Host:        config.GetValue(configuration.ConfigAMQPHost),
+			Port:        config.GetValue(configuration.ConfigAMQPPort),
+			VirtualHost: config.GetValue(configuration.ConfigAMQPVirtualHost),
 		},
 	)
 	require.NoError(t, errConnect)
@@ -36,22 +38,6 @@ func TestService(t *testing.T) {
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
-	require.NoError(t,
-		service.DeclareExchange(
-			&ParamsDeclareExchange{
-				Name:    _NameExchange,
-				Kind:    "direct", // TODO: add type constants.
-				Durable: true,
-			},
-		),
-	)
-	// require.NoError(t,
-	// 	service.DeclareQueue(
-	// 		&ParamsDeclareQueue{
-	// 			Name: _NameQueue,
-	// 		},
-	// 	),
-	// )
 
 	evA := events.EventA{
 		MetricLabel: "jitter",
