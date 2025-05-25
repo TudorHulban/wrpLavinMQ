@@ -9,7 +9,7 @@ type Service struct {
 	channelAMQP *amqp.Channel
 }
 
-func NewService(conn *amqp.Connection) *Service {
+func NewServiceProducer(conn *amqp.Connection) *Service {
 	return &Service{
 		conn: conn,
 	}

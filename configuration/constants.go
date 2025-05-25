@@ -2,9 +2,12 @@ package configuration
 
 const (
 	ConfigAMQPProtocol    = "amqp-protocol"
-	ConfigAMQPUserName    = "amqp-useername"
+	ConfigAMQPNameUser    = "amqp-useername"
 	ConfigAMQPPassword    = "amqp-passord"
 	ConfigAMQPHost        = "amqp-host"
 	ConfigAMQPPort        = "amqp-port"
-	ConfigAMQPVirtualHost = "gtest_host"
+	ConfigAMQPVirtualHost = "virtual-host"
+
+	ConfiqAMQPNameExchange = "amqp-exchange"
+	ConfiqAMQPNameQueue    = "amqp-queue"
 )

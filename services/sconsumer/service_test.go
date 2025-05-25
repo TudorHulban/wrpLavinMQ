@@ -4,12 +4,11 @@ import (
 	"testing"
 
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
-	"github.com/TudorHulban/wrpLavinMQ/domain/events"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
 	"github.com/stretchr/testify/require"
 )
 
-func TestProducerService(t *testing.T) {
+func TestConsumerService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
@@ -28,28 +27,14 @@ func TestProducerService(t *testing.T) {
 
 	require.NotNil(t, conn)
 
-	service := NewServiceProducer(conn)
+	service := NewServiceConsumer(conn)
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
 
-	evA := events.EventA{
-		MetricLabel: "jitter",
-		Value:       21,
-	}
-
-	json, errSerialize := evA.AsJSON()
-	require.NoError(t, errSerialize)
-	require.NotZero(t, json)
-
-	require.NoError(t,
-		service.PublishMessageJSON(
-			&ParamsPublishMessageJSON{
-				Exchange: config.GetValue(configuration.ConfiqAMQPNameExchange),
-				Queue:    config.GetValue(configuration.ConfiqAMQPNameQueue),
-
-				EventAsJSON: json,
-			},
-		),
+	service.ConsumeContinuosly(
+		&ParamsConsume{
+			QueueName: config.GetValue(configuration.ConfiqAMQPNameQueue),
+		},
 	)
 }
