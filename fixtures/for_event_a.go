@@ -24,13 +24,13 @@ func ForEventA(howMany uint16) [][]byte {
 			metricLabel = MetricLabel1
 
 		case 2:
-			metricLabel = MetricLabel1
+			metricLabel = MetricLabel2
 
 		case 3:
-			metricLabel = MetricLabel1
+			metricLabel = MetricLabel3
 
 		case 4:
-			metricLabel = MetricLabel1
+			metricLabel = MetricLabel4
 		}
 
 		eventSerialized, _ := events.EventA{
