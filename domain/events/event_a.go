@@ -1,6 +1,8 @@
 package events
 
-import "encoding/json"
+import (
+	"github.com/bytedance/sonic"
+)
 
 type EventA struct {
 	MetricLabel string `json:"metriclabel"`
@@ -10,7 +12,7 @@ type EventA struct {
 func NewEventA(input []byte) (*EventA, error) {
 	var result EventA
 
-	if errUnmarshal := json.Unmarshal(input, &result); errUnmarshal != nil {
+	if errUnmarshal := sonic.Unmarshal(input, &result); errUnmarshal != nil {
 		return nil,
 			errUnmarshal
 	}
@@ -20,5 +22,5 @@ func NewEventA(input []byte) (*EventA, error) {
 }
 
 func (e EventA) AsJSON() ([]byte, error) {
-	return json.Marshal(e)
+	return sonic.Marshal(e)
 }

@@ -1,6 +1,6 @@
 package events
 
-import "encoding/json"
+import "github.com/bytedance/sonic"
 
 type MetricInfo struct {
 	Sum              float64
@@ -44,5 +44,5 @@ func NewEventB(input map[string]*MetricInfo) *EventB {
 }
 
 func (e EventB) AsJSON() ([]byte, error) {
-	return json.Marshal(e)
+	return sonic.Marshal(e)
 }
