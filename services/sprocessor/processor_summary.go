@@ -1,5 +1,5 @@
 package sprocessor
 
-func Summary(input [][]byte) []byte {
-	return nil
+func Summary(input [][]byte) ([]byte, error) {
+	return nil, nil
 }

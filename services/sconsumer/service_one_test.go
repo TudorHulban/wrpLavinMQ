@@ -38,7 +38,7 @@ func TestConsumerOneService(t *testing.T) {
 
 	service.ConsumeContinuoslyOne(
 		&ParamsConsume{
-			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
+			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 		},
 	)
 }

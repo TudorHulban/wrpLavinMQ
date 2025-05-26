@@ -1,28 +1,66 @@
 package sprocessor
 
-type Processor func([][]byte) []byte
+import (
+	"log"
+
+	goerrors "github.com/TudorHulban/go-errors"
+	"github.com/TudorHulban/wrpLavinMQ/configuration"
+	"github.com/TudorHulban/wrpLavinMQ/helpers"
+	"github.com/TudorHulban/wrpLavinMQ/services/sproducer"
+)
+
+type Processor func([][]byte) ([]byte, error)
 
 type ServiceProcessor struct {
+	configuration configuration.IConfiguration
+
 	proc        Processor
 	ChannelData chan ([][]byte)
+
+	Producer *sproducer.ServiceProducer
 }
 
-func NewServiceProcessor(proc Processor) *ServiceProcessor {
-	return &ServiceProcessor{
-		proc:        proc,
-		ChannelData: make(chan [][]byte),
+type PiersNewServiceProcessor struct {
+	Configuration configuration.IConfiguration
+	Proc          Processor
+	Producer      *sproducer.ServiceProducer
+}
+
+func NewServiceProcessor(piers *PiersNewServiceProcessor) (*ServiceProcessor, error) {
+	if errValidatePiers := helpers.ValidatePiers(piers); errValidatePiers != nil {
+		return nil,
+			goerrors.ErrServiceValidation{
+				ServiceName: _ServiceName,
+				Caller:      "NewServiceProcessor",
+				Issue:       errValidatePiers,
+			}
 	}
+
+	return &ServiceProcessor{
+			configuration: piers.Configuration,
+			proc:          piers.Proc,
+			ChannelData:   make(chan [][]byte),
+			Producer:      piers.Producer,
+		},
+		nil
 }
 
 func (s *ServiceProcessor) Listen(onChannel chan ([][]byte)) {
 	for messages := range onChannel {
-		s.proc(messages)
-	}
-}
+		processed, errProcess := s.proc(messages)
+		if errProcess != nil {
+			go log.Println(errProcess)
 
-// for testing only.
-func (s *ServiceProcessor) ListenWithTiming(onChannel chan ([][]byte)) {
-	for messages := range onChannel {
-		s.proc(messages)
+			continue
+		}
+
+		s.Producer.PublishMessageJSON(
+			processed,
+
+			&sproducer.ParamsPublishMessageJSON{
+				Exchange: s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
+				Queue:    s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameQueueAggregates),
+			},
+		)
 	}
 }

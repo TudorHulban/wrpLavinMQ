@@ -29,21 +29,29 @@ func TestConsumerManyService(t *testing.T) {
 
 	require.NotNil(t, conn)
 
+	serviceProcesor, errServiceProcesor := sprocessor.NewServiceProcessor(
+		&sprocessor.PiersNewServiceProcessor{
+			Configuration: config,
+			Proc:          sprocessor.Agregate,
+		},
+	)
+	require.NoError(t, errServiceProcesor)
+
 	service := NewServiceConsumer(
 		&PiersNewServiceConsumer{
 			Connection: conn,
-			Processor:  sprocessor.NewServiceProcessor(sprocessor.Summary),
+			Processor:  serviceProcesor,
 		},
 	)
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
 
-	go service.processor.ListenWithTiming(service.chData)
+	go service.Processor.Listen(service.ChProcessorData)
 
 	service.ConsumeContinuoslyMany(
 		&ParamsConsume{
-			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
+			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 
 			PefetchCount:              100,
 			BatchMaxAggregateDuration: 5 * time.Second,

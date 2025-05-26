@@ -15,8 +15,8 @@ type ServiceConsumer struct {
 	conn        *amqp.Connection
 	channelAMQP *amqp.Channel
 
-	processor *sprocessor.ServiceProcessor
-	chData    chan [][]byte
+	Processor       *sprocessor.ServiceProcessor
+	ChProcessorData chan [][]byte
 }
 
 type PiersNewServiceConsumer struct {
@@ -27,9 +27,9 @@ type PiersNewServiceConsumer struct {
 // TODO: piers validation.
 func NewServiceConsumer(piers *PiersNewServiceConsumer) *ServiceConsumer {
 	return &ServiceConsumer{
-		conn:      piers.Connection,
-		processor: piers.Processor,
-		chData:    make(chan [][]byte),
+		conn:            piers.Connection,
+		Processor:       piers.Processor,
+		ChProcessorData: make(chan [][]byte),
 	}
 }
 
@@ -154,10 +154,10 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 				if !opened {
 					// delivery channel closed, send whatever we have
 					if len(batch) > 0 {
-						s.chData <- batch
+						s.ChProcessorData <- batch
 					}
 
-					close(s.chData)
+					close(s.ChProcessorData)
 
 					return
 				}
@@ -168,22 +168,26 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 				ix++
 
 				if len(batch) >= params.PefetchCount {
-					s.chData <- batch
+					s.ChProcessorData <- batch
 					batch = nil
 
 					timer.Reset(params.BatchMaxAggregateDuration)
 				}
 
-				if ix == howMany {
-					fmt.Println(
+				if ix%howMany == 0 {
+					fmt.Printf(
+						"processed %d messages in %s\n",
+						howMany,
 						time.Since(start),
 					)
+
+					start = time.Now()
 				}
 
 			case <-timer.C:
 				// time elapsed, send whatever we have
 				if len(batch) > 0 {
-					s.chData <- batch
+					s.ChProcessorData <- batch
 					batch = nil
 				}
 

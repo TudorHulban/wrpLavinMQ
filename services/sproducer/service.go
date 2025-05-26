@@ -31,13 +31,11 @@ type ParamsPublishMessageJSON struct {
 	Queue       string
 	MessageType string
 
-	EventAsJSON []byte
-
 	Mandatory bool
 	Immediate bool
 }
 
-func (s *ServiceProducer) PublishMessageJSON(params *ParamsPublishMessageJSON) error {
+func (s *ServiceProducer) PublishMessageJSON(message []byte, params *ParamsPublishMessageJSON) error {
 	return s.channelAMQP.Publish(
 		params.Exchange,
 		params.Queue,
@@ -47,7 +45,7 @@ func (s *ServiceProducer) PublishMessageJSON(params *ParamsPublishMessageJSON) e
 		amqp.Publishing{
 			ContentType: "application/json",
 			Type:        params.MessageType,
-			Body:        params.EventAsJSON,
+			Body:        message,
 		},
 	)
 }

@@ -44,11 +44,10 @@ func TestProducerManyService(t *testing.T) {
 	for _, msg := range messages {
 		require.NoError(t,
 			service.PublishMessageJSON(
+				msg,
 				&ParamsPublishMessageJSON{
 					Exchange: config.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
-					Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
-
-					EventAsJSON: msg,
+					Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 				},
 			),
 		)

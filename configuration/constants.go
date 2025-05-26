@@ -8,6 +8,7 @@ const (
 	ConfigAMQPPort        = "amqp-port"
 	ConfigAMQPVirtualHost = "virtual-host"
 
-	ConfiqAMQPNameExchange = "amqp-exchange"
-	ConfiqAMQPNameQueue    = "amqp-queue"
+	ConfiqAMQPNameExchange        = "amqp-exchange"
+	ConfiqAMQPNameQueueMessages   = "amqp-queue-messages"
+	ConfiqAMQPNameQueueAggregates = "amqp-queue-aggregates"
 )

@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	_MetricLabel1 = "Param1"
-	_MetricLabel2 = "Param2"
-	_MetricLabel3 = "Param3"
-	_MetricLabel4 = "Param4"
+	MetricLabel1 = "Param1"
+	MetricLabel2 = "Param2"
+	MetricLabel3 = "Param3"
+	MetricLabel4 = "Param4"
 )
 
 func ForEventA(howMany uint16) [][]byte {
@@ -21,16 +21,16 @@ func ForEventA(howMany uint16) [][]byte {
 
 		switch rand.Intn(4) + 1 {
 		case 1:
-			metricLabel = _MetricLabel1
+			metricLabel = MetricLabel1
 
 		case 2:
-			metricLabel = _MetricLabel1
+			metricLabel = MetricLabel1
 
 		case 3:
-			metricLabel = _MetricLabel1
+			metricLabel = MetricLabel1
 
 		case 4:
-			metricLabel = _MetricLabel1
+			metricLabel = MetricLabel1
 		}
 
 		eventSerialized, _ := events.EventA{

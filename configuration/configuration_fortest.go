@@ -19,8 +19,9 @@ func NewConfigurationTest() (*ConfigurationTest, error) {
 
 				ConfigAMQPVirtualHost: "gtest_host",
 
-				ConfiqAMQPNameExchange: "ex12345",
-				ConfiqAMQPNameQueue:    "q12345",
+				ConfiqAMQPNameExchange:        "ex12345",
+				ConfiqAMQPNameQueueMessages:   "q12345",
+				ConfiqAMQPNameQueueAggregates: "q67890",
 			},
 		},
 		nil

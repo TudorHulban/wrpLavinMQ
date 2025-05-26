@@ -44,11 +44,11 @@ func TestProducerOneService(t *testing.T) {
 
 	require.NoError(t,
 		service.PublishMessageJSON(
+			json,
+
 			&ParamsPublishMessageJSON{
 				Exchange: config.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
-				Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
-
-				EventAsJSON: json,
+				Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 			},
 		),
 	)

@@ -7,6 +7,18 @@ type EventA struct {
 	Value       int    `json:"value"`
 }
 
+func NewEventA(input []byte) (*EventA, error) {
+	var result EventA
+
+	if errUnmarshal := json.Unmarshal(input, &result); errUnmarshal != nil {
+		return nil,
+			errUnmarshal
+	}
+
+	return &result,
+		nil
+}
+
 func (e EventA) AsJSON() ([]byte, error) {
 	return json.Marshal(e)
 }
