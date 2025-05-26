@@ -1,14 +1,17 @@
 package sconsumer
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
+	"github.com/TudorHulban/wrpLavinMQ/fixtures"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
 	"github.com/stretchr/testify/require"
 )
 
-func TestConsumerService(t *testing.T) {
+func TestProducerManyService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
@@ -27,14 +30,31 @@ func TestConsumerService(t *testing.T) {
 
 	require.NotNil(t, conn)
 
-	service := NewServiceConsumer(conn)
+	service := NewServiceProducer(conn)
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
 
-	service.ConsumeContinuosly(
-		&ParamsConsume{
-			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
-		},
+	howMany := 10000
+
+	messages := fixtures.ForEventA(uint16(howMany))
+
+	startTime := time.Now()
+
+	for _, msg := range messages {
+		require.NoError(t,
+			service.PublishMessageJSON(
+				&ParamsPublishMessageJSON{
+					Exchange: config.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
+					Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
+
+					EventAsJSON: msg,
+				},
+			),
+		)
+	}
+
+	fmt.Println(
+		time.Since(startTime), // 670.355159ms for 10k.
 	)
 }

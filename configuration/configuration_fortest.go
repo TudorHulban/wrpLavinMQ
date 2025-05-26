@@ -26,7 +26,7 @@ func NewConfigurationTest() (*ConfigurationTest, error) {
 		nil
 }
 
-func (config ConfigurationTest) GetValue(key string) string {
+func (config ConfigurationTest) GetConfigurationValue(key string) string {
 	result, exists := config.configuration[key]
 	if exists {
 		return result

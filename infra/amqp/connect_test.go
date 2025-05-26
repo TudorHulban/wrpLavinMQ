@@ -13,11 +13,11 @@ func TestConnect(t *testing.T) {
 
 	conn, errConnect := Connect(
 		&ConfigAMQP{
-			Protocol: config.GetValue(configuration.ConfigAMQPProtocol),
-			Username: config.GetValue(configuration.ConfigAMQPNameUser),
-			Password: config.GetValue(configuration.ConfigAMQPPassword),
-			Host:     config.GetValue(configuration.ConfigAMQPHost),
-			Port:     config.GetValue(configuration.ConfigAMQPPort),
+			Protocol: config.GetConfigurationValue(configuration.ConfigAMQPProtocol),
+			Username: config.GetConfigurationValue(configuration.ConfigAMQPNameUser),
+			Password: config.GetConfigurationValue(configuration.ConfigAMQPPassword),
+			Host:     config.GetConfigurationValue(configuration.ConfigAMQPHost),
+			Port:     config.GetConfigurationValue(configuration.ConfigAMQPPort),
 		},
 	)
 	require.NoError(t, errConnect)

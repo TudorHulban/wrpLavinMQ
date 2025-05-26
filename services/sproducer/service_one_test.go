@@ -9,18 +9,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestProducerService(t *testing.T) {
+func TestProducerOneService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
 	conn, errConnect := connection.Connect(
 		&connection.ConfigAMQP{
-			Protocol:    config.GetValue(configuration.ConfigAMQPProtocol),
-			Username:    config.GetValue(configuration.ConfigAMQPNameUser),
-			Password:    config.GetValue(configuration.ConfigAMQPPassword),
-			Host:        config.GetValue(configuration.ConfigAMQPHost),
-			Port:        config.GetValue(configuration.ConfigAMQPPort),
-			VirtualHost: config.GetValue(configuration.ConfigAMQPVirtualHost),
+			Protocol:    config.GetConfigurationValue(configuration.ConfigAMQPProtocol),
+			Username:    config.GetConfigurationValue(configuration.ConfigAMQPNameUser),
+			Password:    config.GetConfigurationValue(configuration.ConfigAMQPPassword),
+			Host:        config.GetConfigurationValue(configuration.ConfigAMQPHost),
+			Port:        config.GetConfigurationValue(configuration.ConfigAMQPPort),
+			VirtualHost: config.GetConfigurationValue(configuration.ConfigAMQPVirtualHost),
 		},
 	)
 	require.NoError(t, errConnect)
@@ -45,8 +45,8 @@ func TestProducerService(t *testing.T) {
 	require.NoError(t,
 		service.PublishMessageJSON(
 			&ParamsPublishMessageJSON{
-				Exchange: config.GetValue(configuration.ConfiqAMQPNameExchange),
-				Queue:    config.GetValue(configuration.ConfiqAMQPNameQueue),
+				Exchange: config.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
+				Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
 
 				EventAsJSON: json,
 			},

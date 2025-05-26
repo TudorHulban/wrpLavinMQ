@@ -1,5 +1,5 @@
 package configuration
 
 type IConfiguration interface {
-	GetValue(key string) string
+	GetConfigurationValue(key string) string
 }
