@@ -32,7 +32,7 @@ func TestConsumerManyService(t *testing.T) {
 	serviceProcesor, errServiceProcesor := sprocessor.NewServiceProcessor(
 		&sprocessor.PiersNewServiceProcessor{
 			Configuration: config,
-			Proc:          sprocessor.Agregate,
+			Proc:          sprocessor.Aggregate,
 		},
 	)
 	require.NoError(t, errServiceProcesor)

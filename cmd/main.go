@@ -83,7 +83,7 @@ func main() {
 	serviceProcesor, errServiceProcesor := sprocessor.NewServiceProcessor(
 		&sprocessor.PiersNewServiceProcessor{
 			Configuration: config,
-			Proc:          sprocessor.Agregate,
+			Proc:          sprocessor.Aggregate,
 			Producer:      serviceProducer,
 		},
 	)
