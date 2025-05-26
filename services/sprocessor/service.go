@@ -19,3 +19,10 @@ func (s *ServiceProcessor) Listen(onChannel chan ([][]byte)) {
 		s.proc(messages)
 	}
 }
+
+// for testing only.
+func (s *ServiceProcessor) ListenWithTiming(onChannel chan ([][]byte)) {
+	for messages := range onChannel {
+		s.proc(messages)
+	}
+}

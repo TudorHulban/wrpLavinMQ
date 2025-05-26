@@ -1,10 +1,13 @@
 package sconsumer
 
 import (
+	"fmt"
 	"log"
 	"time"
 
+	goerrors "github.com/TudorHulban/go-errors"
 	"github.com/TudorHulban/wrpLavinMQ/services/sprocessor"
+	"github.com/asaskevich/govalidator"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -44,10 +47,12 @@ func (s *ServiceConsumer) Connect() error {
 type ParamsConsume struct {
 	Table amqp.Table
 
-	QueueName   string
+	QueueName   string `valid:"required"`
 	ConsumerTag string
 
-	PefetchCount int
+	BatchMaxAggregateDuration time.Duration `valid:"required"`
+
+	PefetchCount int `valid:"required"`
 	PrefetchSize int
 	Global       bool
 
@@ -102,6 +107,14 @@ func (s *ServiceConsumer) ConsumeContinuoslyOne(params *ParamsConsume) error {
 }
 
 func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
+	if _, errValidation := govalidator.ValidateStruct(params); errValidation != nil {
+		return goerrors.ErrServiceValidation{
+			ServiceName: _ServiceName,
+			Caller:      "ConsumeContinuoslyMany",
+			Issue:       errValidation,
+		}
+	}
+
 	if errQOS := s.channelAMQP.Qos(
 		params.PefetchCount,
 		params.PrefetchSize,
@@ -125,9 +138,14 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 
 	blocker := make(chan struct{})
 
+	start := time.Now()
+
+	howMany := 10000
+	var ix int
+
 	go func() {
 		var batch [][]byte
-		timer := time.NewTimer(5 * time.Second)
+		timer := time.NewTimer(params.BatchMaxAggregateDuration)
 		defer timer.Stop()
 
 		for {
@@ -144,25 +162,32 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 					return
 				}
 
-				log.Printf("received a message: %s", delivered.Body)
 				batch = append(batch, delivered.Body)
 				delivered.Ack(false)
-				log.Print("message acknowledged")
 
-				// Check if we've reached 100 messages
-				if len(batch) >= 100 {
+				ix++
+
+				if len(batch) >= params.PefetchCount {
 					s.chData <- batch
-					batch = nil                  // Reset batch
-					timer.Reset(5 * time.Second) // Reset timer for next batch
+					batch = nil
+
+					timer.Reset(params.BatchMaxAggregateDuration)
+				}
+
+				if ix == howMany {
+					fmt.Println(
+						time.Since(start),
+					)
 				}
 
 			case <-timer.C:
-				// 5 seconds elapsed, send whatever we have
+				// time elapsed, send whatever we have
 				if len(batch) > 0 {
 					s.chData <- batch
 					batch = nil
 				}
-				timer.Reset(5 * time.Second) // Reset timer for next batch
+
+				timer.Reset(params.BatchMaxAggregateDuration)
 			}
 		}
 	}()

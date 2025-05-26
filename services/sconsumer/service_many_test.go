@@ -2,6 +2,7 @@ package sconsumer
 
 import (
 	"testing"
+	"time"
 
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
@@ -38,13 +39,14 @@ func TestConsumerManyService(t *testing.T) {
 
 	require.NoError(t, service.Connect())
 
-	go service.processor.Listen(service.chData)
+	go service.processor.ListenWithTiming(service.chData)
 
 	service.ConsumeContinuoslyMany(
 		&ParamsConsume{
 			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
 
-			PefetchCount: 100,
+			PefetchCount:              100,
+			BatchMaxAggregateDuration: 5 * time.Second,
 		},
 	)
 }
