@@ -5,10 +5,11 @@ import (
 
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
+	"github.com/TudorHulban/wrpLavinMQ/services/sprocessor"
 	"github.com/stretchr/testify/require"
 )
 
-func TestConsumerService(t *testing.T) {
+func TestConsumerManyService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
@@ -27,14 +28,23 @@ func TestConsumerService(t *testing.T) {
 
 	require.NotNil(t, conn)
 
-	service := NewServiceConsumer(conn)
+	service := NewServiceConsumer(
+		&PiersNewServiceConsumer{
+			Connection: conn,
+			Processor:  sprocessor.NewServiceProcessor(sprocessor.Summary),
+		},
+	)
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
 
-	service.ConsumeContinuosly(
+	go service.processor.Listen(service.chData)
+
+	service.ConsumeContinuoslyMany(
 		&ParamsConsume{
 			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueue),
+
+			PefetchCount: 100,
 		},
 	)
 }

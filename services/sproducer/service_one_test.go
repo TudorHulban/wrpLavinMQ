@@ -1,4 +1,4 @@
-package sconsumer
+package sproducer
 
 import (
 	"testing"

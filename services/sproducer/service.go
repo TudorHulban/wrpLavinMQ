@@ -1,21 +1,21 @@
-package sconsumer
+package sproducer
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Service struct {
+type ServiceProducer struct {
 	conn        *amqp.Connection
 	channelAMQP *amqp.Channel
 }
 
-func NewServiceProducer(conn *amqp.Connection) *Service {
-	return &Service{
+func NewServiceProducer(conn *amqp.Connection) *ServiceProducer {
+	return &ServiceProducer{
 		conn: conn,
 	}
 }
 
-func (s *Service) Connect() error {
+func (s *ServiceProducer) Connect() error {
 	ch, errChannelOpen := s.conn.Channel()
 	if errChannelOpen != nil {
 		return errChannelOpen
@@ -37,7 +37,7 @@ type ParamsPublishMessageJSON struct {
 	Immediate bool
 }
 
-func (s *Service) PublishMessageJSON(params *ParamsPublishMessageJSON) error {
+func (s *ServiceProducer) PublishMessageJSON(params *ParamsPublishMessageJSON) error {
 	return s.channelAMQP.Publish(
 		params.Exchange,
 		params.Queue,
@@ -52,6 +52,6 @@ func (s *Service) PublishMessageJSON(params *ParamsPublishMessageJSON) error {
 	)
 }
 
-func (s *Service) Close() error {
+func (s *ServiceProducer) Close() error {
 	return s.conn.Close()
 }
