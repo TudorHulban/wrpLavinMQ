@@ -140,8 +140,20 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 
 	start := time.Now()
 
-	howMany := 10000
+	trackTimeAt := 10000
+
 	var ix int
+
+	trackTime := func(message string, howMany int) {
+		fmt.Printf(
+			"%s: processed %d messages in %.4fs.\n",
+			message,
+			howMany,
+			time.Since(start).Seconds(),
+		)
+
+		start = time.Now()
+	}
 
 	go func() {
 		var batch [][]byte
@@ -152,9 +164,13 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 			select {
 			case delivered, opened := <-delivery:
 				if !opened {
-					// delivery channel closed, send whatever we have
 					if len(batch) > 0 {
 						s.ChProcessorData <- batch
+
+						trackTime(
+							"delivery channel closed, send whatever we have",
+							len(batch),
+						)
 					}
 
 					close(s.ChProcessorData)
@@ -174,20 +190,27 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 					timer.Reset(params.BatchMaxAggregateDuration)
 				}
 
-				if ix%howMany == 0 {
-					fmt.Printf(
-						"processed %d messages in %s\n",
-						howMany,
-						time.Since(start),
+				if ix%trackTimeAt == 0 {
+					go trackTime(
+						fmt.Sprintf(
+							"reporting at %d messages",
+							trackTimeAt,
+						),
+						ix,
 					)
 
-					start = time.Now()
+					ix = 0
 				}
 
 			case <-timer.C:
-				// time elapsed, send whatever we have
 				if len(batch) > 0 {
 					s.ChProcessorData <- batch
+
+					trackTime(
+						"time elapsed, send whatever we have",
+						len(batch),
+					)
+
 					batch = nil
 				}
 

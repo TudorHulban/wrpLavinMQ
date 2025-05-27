@@ -117,7 +117,7 @@ func main() {
 			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 
 			PefetchCount:              100,
-			BatchMaxAggregateDuration: 5 * time.Second,
+			BatchMaxAggregateDuration: 3 * time.Second,
 		},
 	)
 }
