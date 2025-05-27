@@ -1,0 +1,24 @@
+{
+  "Field1": [
+    {
+      "Field2": "some string",
+      "Field3": 7,
+      "Field4": 7
+    },
+    {
+      "Field2": "some string",
+      "Field3": 7,
+      "Field4": 7
+    },
+    {
+      "Field2": "some string",
+      "Field3": 7,
+      "Field4": 7
+    },
+    {
+      "Field2": "some string",
+      "Field3": 7,
+      "Field4": 7
+    }
+  ]
+}

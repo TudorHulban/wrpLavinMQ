@@ -1,0 +1,24 @@
+{
+   "averages":[
+      {
+         "metriclabel":"Param4",
+         "averagevalue":1,
+         "numbermessages":20
+      },
+      {
+         "metriclabel":"Param1",
+         "averagevalue":1,
+         "numbermessages":28
+      },
+      {
+         "metriclabel":"Param2",
+         "averagevalue":1,
+         "numbermessages":31
+      },
+      {
+         "metriclabel":"Param3",
+         "averagevalue":1,
+         "numbermessages":21
+      }
+   ]
+}
