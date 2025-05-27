@@ -9,7 +9,7 @@ import (
 	"github.com/TudorHulban/wrpLavinMQ/services/sproducer"
 )
 
-type Processor func([][]byte) ([]byte, error)
+type Processor func([][]byte) ([][]byte, error)
 
 type ServiceProcessor struct {
 	configuration configuration.IConfiguration
@@ -17,7 +17,7 @@ type ServiceProcessor struct {
 	proc        Processor
 	ChannelData chan ([][]byte)
 
-	Producer *sproducer.ServiceProducer
+	Producer *sproducer.ServiceProducer // TODO: move to io.writer?
 }
 
 type PiersNewServiceProcessor struct {
@@ -54,13 +54,15 @@ func (s *ServiceProcessor) Listen(onChannel chan ([][]byte)) {
 			continue
 		}
 
-		s.Producer.PublishMessageJSON(
-			processed,
+		for _, message := range processed {
+			s.Producer.PublishMessageJSON(
+				message,
 
-			&sproducer.ParamsPublishMessageJSON{
-				Exchange: s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
-				Queue:    s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameQueueAggregates),
-			},
-		)
+				&sproducer.ParamsPublishMessageJSON{
+					Exchange: s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
+					Queue:    s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameQueueAggregates),
+				},
+			)
+		}
 	}
 }

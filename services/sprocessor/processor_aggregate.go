@@ -16,7 +16,7 @@ var (
 	}
 )
 
-func Aggregate(input [][]byte) ([]byte, error) {
+func Aggregate(input [][]byte) ([][]byte, error) {
 	metrics := metricsPool.Get().(map[string]*events.MetricInfo)
 	defer metricsPool.Put(metrics)
 
@@ -45,5 +45,12 @@ func Aggregate(input [][]byte) ([]byte, error) {
 		values.Sum = values.Sum + float64(event.Value)
 	}
 
-	return events.NewEventB(metrics).AsJSON()
+	eventB, errCr := events.NewEventB(metrics).AsJSON()
+	if errCr != nil {
+		return nil,
+			errCr
+	}
+
+	return [][]byte{eventB},
+		nil
 }
