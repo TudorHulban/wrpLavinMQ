@@ -6,6 +6,7 @@ require (
 	github.com/TudorHulban/go-errors v0.0.0-20250526111805-0875506117af
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/bytedance/sonic v1.13.2
+	github.com/phuslu/log v1.0.118
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/stretchr/testify v1.10.0
 )

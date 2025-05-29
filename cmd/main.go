@@ -10,13 +10,19 @@ import (
 	"github.com/TudorHulban/wrpLavinMQ/fixtures"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
 	"github.com/TudorHulban/wrpLavinMQ/services/sconsumer"
+	"github.com/TudorHulban/wrpLavinMQ/services/slogging"
 	"github.com/TudorHulban/wrpLavinMQ/services/sprocessor"
 	"github.com/TudorHulban/wrpLavinMQ/services/sproducer"
 )
 
 func main() {
+	serviceLoger := slogging.NewServiceLog()
+
 	config, errConfig := configuration.NewConfigurationTest()
 	if errConfig != nil {
+		serviceLoger.Logger.
+			Err(errConfig).
+			Msg("configuration setup")
 		os.Exit(
 			goerrors.OSExitForConfigurationIssues,
 		)
@@ -33,6 +39,9 @@ func main() {
 		},
 	)
 	if errConnect != nil {
+		serviceLoger.Logger.
+			Err(errConnect).
+			Msg("AMQP setup")
 		os.Exit(
 			goerrors.OSExitForApplicationIssues,
 		)
@@ -41,11 +50,9 @@ func main() {
 
 	serviceProducer := sproducer.NewServiceProducer(conn)
 	if errConnectProducer := serviceProducer.Connect(); errConnectProducer != nil {
-		os.Exit(
-			goerrors.OSExitForServiceIssues,
-		)
-	}
-	if errConnectServiceProducer := serviceProducer.Connect(); errConnectServiceProducer != nil {
+		serviceLoger.Logger.
+			Err(errConnectProducer).
+			Msg("service producer")
 		os.Exit(
 			goerrors.OSExitForServiceIssues,
 		)
@@ -66,8 +73,9 @@ func main() {
 				Queue:    config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
 			},
 		); errPublish != nil {
-			fmt.Println(errPublish)
-
+			serviceLoger.Logger.
+				Err(errPublish).
+				Msg("service producer")
 			os.Exit(
 				goerrors.OSExitForServiceIssues,
 			)
@@ -89,8 +97,9 @@ func main() {
 		},
 	)
 	if errServiceProcesor != nil {
-		fmt.Println(errServiceProcesor)
-
+		serviceLoger.Logger.
+			Err(errServiceProcesor).
+			Msg("service processor")
 		os.Exit(
 			goerrors.OSExitForServiceIssues,
 		)
@@ -103,8 +112,9 @@ func main() {
 		},
 	)
 	if errConnectServiceConsumer := serviceConsumer.Connect(); errConnectServiceConsumer != nil {
-		fmt.Println(errConnectServiceConsumer)
-
+		serviceLoger.Logger.
+			Err(errServiceProcesor).
+			Msg("service consumer")
 		os.Exit(
 			goerrors.OSExitForServiceIssues,
 		)
