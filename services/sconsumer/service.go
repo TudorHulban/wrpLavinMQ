@@ -2,10 +2,11 @@ package sconsumer
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	goerrors "github.com/TudorHulban/go-errors"
+	"github.com/TudorHulban/wrpLavinMQ/helpers"
+	"github.com/TudorHulban/wrpLavinMQ/services/slogging"
 	"github.com/TudorHulban/wrpLavinMQ/services/sprocessor"
 	"github.com/asaskevich/govalidator"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -15,22 +16,37 @@ type ServiceConsumer struct {
 	conn        *amqp.Connection
 	channelAMQP *amqp.Channel
 
-	Processor       *sprocessor.ServiceProcessor
+	Processor *sprocessor.ServiceProcessor
+	loger     *slogging.ServiceLogging
+
 	ChProcessorData chan [][]byte
 }
 
 type PiersNewServiceConsumer struct {
 	Connection *amqp.Connection
 	Processor  *sprocessor.ServiceProcessor
+	Loger      *slogging.ServiceLogging
 }
 
-// TODO: piers validation.
-func NewServiceConsumer(piers *PiersNewServiceConsumer) *ServiceConsumer {
-	return &ServiceConsumer{
-		conn:            piers.Connection,
-		Processor:       piers.Processor,
-		ChProcessorData: make(chan [][]byte),
+func NewServiceConsumer(piers *PiersNewServiceConsumer) (*ServiceConsumer, error) {
+	if errValidatePiers := helpers.ValidatePiers(piers); errValidatePiers != nil {
+		return nil,
+			goerrors.ErrServiceValidation{
+				ServiceName: _ServiceName,
+				Caller:      "NewServiceConsumer",
+				Issue:       errValidatePiers,
+			}
 	}
+
+	return &ServiceConsumer{
+			conn: piers.Connection,
+
+			Processor: piers.Processor,
+			loger:     piers.Loger,
+
+			ChProcessorData: make(chan [][]byte),
+		},
+		nil
 }
 
 func (s *ServiceConsumer) Connect() error {
@@ -60,50 +76,6 @@ type ParamsConsume struct {
 	Exclusive bool
 	NoLocal   bool
 	NoWait    bool
-}
-
-func (s *ServiceConsumer) ConsumeContinuoslyOne(params *ParamsConsume) error {
-	if errQOS := s.channelAMQP.Qos(
-		params.PefetchCount,
-		params.PrefetchSize,
-		params.Global,
-	); errQOS != nil {
-		return errQOS
-	}
-
-	delivery, errConsume := s.channelAMQP.Consume(
-		params.QueueName,
-		params.ConsumerTag,
-		params.AutoAck,
-		params.Exclusive,
-		params.NoLocal,
-		params.NoWait,
-		params.Table,
-	)
-	if errConsume != nil {
-		return errConsume
-	}
-
-	blocker := make(chan struct{})
-
-	go func() {
-		for delivered := range delivery {
-			log.Printf(
-				"received a message: %s",
-				delivered.Body,
-			)
-
-			// simulate some work
-			time.Sleep(2 * time.Second)
-
-			delivered.Ack(false)
-			log.Print("message acknowledged")
-		}
-	}()
-
-	<-blocker
-
-	return nil
 }
 
 func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
@@ -145,7 +117,7 @@ func (s *ServiceConsumer) ConsumeContinuoslyMany(params *ParamsConsume) error {
 	var ix int
 
 	trackTime := func(message string, howMany int) {
-		fmt.Printf(
+		s.loger.Logger.Info().Msgf(
 			"%s: processed %d messages in %.4fs.\n",
 			message,
 			howMany,

@@ -2,7 +2,6 @@ package connection
 
 import (
 	"fmt"
-	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -28,11 +27,7 @@ func (a ConfigAMQP) String() string {
 }
 
 func Connect(config *ConfigAMQP) (*amqp.Connection, error) {
-	url := config.String()
-
-	log.Print(url)
-
-	connection, errConnection := amqp.Dial(url)
+	connection, errConnection := amqp.Dial(config.String())
 	if errConnection != nil {
 		return nil,
 			errConnection

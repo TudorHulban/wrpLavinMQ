@@ -2,13 +2,16 @@ package sconsumer
 
 import (
 	"testing"
+	"time"
 
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
 	connection "github.com/TudorHulban/wrpLavinMQ/infra/amqp"
+	"github.com/TudorHulban/wrpLavinMQ/services/slogging"
+	"github.com/TudorHulban/wrpLavinMQ/services/sprocessor"
 	"github.com/stretchr/testify/require"
 )
 
-func TestConsumerOneService(t *testing.T) {
+func TestConsumerService(t *testing.T) {
 	config, errConfig := configuration.NewConfigurationTest()
 	require.NoError(t, errConfig)
 
@@ -27,18 +30,34 @@ func TestConsumerOneService(t *testing.T) {
 
 	require.NotNil(t, conn)
 
-	service := NewServiceConsumer(
-		&PiersNewServiceConsumer{
-			Connection: conn,
+	serviceProcesor, errServiceProcesor := sprocessor.NewServiceProcessor(
+		&sprocessor.PiersNewServiceProcessor{
+			Configuration: config,
+			Proc:          sprocessor.Aggregate,
 		},
 	)
+	require.NoError(t, errServiceProcesor)
+
+	service, errCr := NewServiceConsumer(
+		&PiersNewServiceConsumer{
+			Connection: conn,
+			Processor:  serviceProcesor,
+			Loger:      slogging.NewServiceLog(),
+		},
+	)
+	require.NoError(t, errCr)
 	require.NotNil(t, service)
 
 	require.NoError(t, service.Connect())
 
-	service.ConsumeContinuoslyOne(
+	go service.Processor.ListenConcurrent(service.ChProcessorData)
+
+	service.ConsumeContinuoslyMany(
 		&ParamsConsume{
 			QueueName: config.GetConfigurationValue(configuration.ConfiqAMQPNameQueueMessages),
+
+			PefetchCount:              100,
+			BatchMaxAggregateDuration: 5 * time.Second,
 		},
 	)
 }

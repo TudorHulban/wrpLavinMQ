@@ -4,12 +4,12 @@ import (
 	"github.com/phuslu/log"
 )
 
-type Service struct {
+type ServiceLogging struct {
 	Logger *log.Logger
 }
 
-func NewServiceLog() *Service {
-	return &Service{
+func NewServiceLog() *ServiceLogging {
+	return &ServiceLogging{
 		Logger: &log.Logger{
 			TimeFormat: "15:04:05",
 			Caller:     -1,

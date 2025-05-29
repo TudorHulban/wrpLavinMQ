@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -48,6 +47,12 @@ func main() {
 	}
 	defer conn.Close()
 
+	serviceLoger.Logger.Info().Msgf(
+		"connected to MQ virtual host: %s/%s",
+		config.GetConfigurationValue(configuration.ConfigAMQPHost),
+		config.GetConfigurationValue(configuration.ConfigAMQPVirtualHost),
+	)
+
 	serviceProducer := sproducer.NewServiceProducer(conn)
 	if errConnectProducer := serviceProducer.Connect(); errConnectProducer != nil {
 		serviceLoger.Logger.
@@ -82,7 +87,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf(
+	serviceLoger.Logger.Info().Msgf(
 		"produced %d messages in %s\n",
 		howMany,
 		time.Since(startTimeProduce),
@@ -105,12 +110,21 @@ func main() {
 		)
 	}
 
-	serviceConsumer := sconsumer.NewServiceConsumer(
+	serviceConsumer, errCrServiceConsummer := sconsumer.NewServiceConsumer(
 		&sconsumer.PiersNewServiceConsumer{
 			Connection: conn,
 			Processor:  serviceProcesor,
+			Loger:      serviceLoger,
 		},
 	)
+	if errCrServiceConsummer != nil {
+		serviceLoger.Logger.
+			Err(errCrServiceConsummer).
+			Msg("service consumer")
+		os.Exit(
+			goerrors.OSExitForServiceIssues,
+		)
+	}
 	if errConnectServiceConsumer := serviceConsumer.Connect(); errConnectServiceConsumer != nil {
 		serviceLoger.Logger.
 			Err(errServiceProcesor).
