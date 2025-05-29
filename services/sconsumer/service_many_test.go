@@ -47,7 +47,7 @@ func TestConsumerManyService(t *testing.T) {
 
 	require.NoError(t, service.Connect())
 
-	go service.Processor.Listen(service.ChProcessorData)
+	go service.Processor.ListenConcurrent(service.ChProcessorData)
 
 	service.ConsumeContinuoslyMany(
 		&ParamsConsume{

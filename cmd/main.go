@@ -110,7 +110,7 @@ func main() {
 		)
 	}
 
-	go serviceConsumer.Processor.Listen(serviceConsumer.ChProcessorData)
+	go serviceConsumer.Processor.ListenSequential(serviceConsumer.ChProcessorData)
 
 	serviceConsumer.ConsumeContinuoslyMany(
 		&sconsumer.ParamsConsume{

@@ -2,6 +2,8 @@ package sprocessor
 
 import (
 	"log"
+	"runtime"
+	"sync"
 
 	goerrors "github.com/TudorHulban/go-errors"
 	"github.com/TudorHulban/wrpLavinMQ/configuration"
@@ -45,7 +47,54 @@ func NewServiceProcessor(piers *PiersNewServiceProcessor) (*ServiceProcessor, er
 		nil
 }
 
-func (s *ServiceProcessor) Listen(onChannel chan ([][]byte)) {
+func (s *ServiceProcessor) listen(wg *sync.WaitGroup, onChannel <-chan [][]byte) error {
+	defer wg.Done()
+
+	for work := range onChannel {
+		processed, errProcess := s.proc(work)
+		if errProcess != nil {
+			return errProcess
+		}
+
+		for _, message := range processed {
+			if errPublish := s.Producer.PublishMessageJSON(
+				message,
+
+				&sproducer.ParamsPublishMessageJSON{
+					Exchange: s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameExchange),
+					Queue:    s.configuration.GetConfigurationValue(configuration.ConfiqAMQPNameQueueAggregates),
+				},
+			); errPublish != nil {
+				return errPublish
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *ServiceProcessor) ListenConcurrent(onChannel chan [][]byte) {
+	numberWorkers := helpers.Max(
+		1,
+		runtime.NumCPU()-4,
+	)
+
+	var wg sync.WaitGroup
+
+	wg.Add(numberWorkers)
+
+	for range numberWorkers {
+		go func() {
+			if errListen := s.listen(&wg, onChannel); errListen != nil {
+				log.Println(errListen)
+			}
+		}()
+	}
+
+	wg.Wait()
+}
+
+func (s *ServiceProcessor) ListenSequential(onChannel chan [][]byte) {
 	for messages := range onChannel {
 		processed, errProcess := s.proc(messages)
 		if errProcess != nil {
