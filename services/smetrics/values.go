@@ -28,30 +28,42 @@ func NewValues(maxListLength uint16) *Values {
 
 func (v *Values) AddValue(onList IdentifierEmitter, payload float64) {
 	if linkedList, exists := v.values[onList]; exists {
-		newHead := Value{
+		newHead := &Value{
 			valueNext: linkedList.Head,
 			Payload:   payload,
 		}
 
 		if linkedList.Head != nil {
-			linkedList.Head.valuePrevious = &newHead
+			linkedList.Head.valuePrevious = newHead
 		}
 
-		linkedList.Head = &newHead
+		linkedList.Head = newHead
 
 		if linkedList.Tail == nil {
-			linkedList.Tail = &newHead
+			linkedList.Tail = newHead
 		}
 
 		linkedList.NumberValues++
 
+		if linkedList.NumberValues > v.maxListLength {
+			newTail := linkedList.Tail.valuePrevious
+
+			if newTail != nil {
+				newTail.valueNext = nil
+				linkedList.Tail = newTail
+			}
+
+			linkedList.NumberValues = v.maxListLength
+		}
+
 		return
 	}
 
+	newValue := &Value{Payload: payload}
+
 	v.values[onList] = &LinkedList{
-		Head: &Value{
-			Payload: payload,
-		},
+		Head: newValue,
+		Tail: newValue,
 
 		NumberValues: 1,
 	}

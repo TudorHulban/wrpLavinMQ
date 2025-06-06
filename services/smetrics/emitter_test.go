@@ -65,20 +65,19 @@ func (e *Emitter) Emit(ctx context.Context) <-chan Emited {
 
 func TestEmitter(t *testing.T) {
 	e := Emitter{
-		timeInterval:   200 * time.Millisecond,
+		timeInterval:   10 * time.Millisecond,
 		numberEmitters: 5,
 	}
 
-	values := NewValues(100)
-
+	values := NewValues(30)
 	metrics := NewMetrics()
+
+	identifierCounts := make(map[IdentifierEmitter]uint16)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	chRead := e.Emit(
-		ctx,
-	)
+	chRead := e.Emit(ctx)
 
 	startTime := time.Now()
 	var messageCount uint
@@ -94,17 +93,18 @@ func TestEmitter(t *testing.T) {
 
 		(*metrics)[event.Identifier] = values.GetMetric(event.Identifier)
 
+		identifierCounts[event.Identifier] = values.GetNumberValues(event.Identifier)
+
 		messageCount++
 
 		select {
 		case <-ticker.C:
 			go fmt.Printf(
-				"Number values: %d. %s",
-
-				numberValues,
+				"Total messages: %d. Values per identifier: %+v. %s\n",
+				messageCount,
+				identifierCounts,
 				metrics,
 			)
-
 		default:
 		}
 	}
@@ -117,5 +117,10 @@ func TestEmitter(t *testing.T) {
 		messageCount,
 		elapsedTime,
 		messagesPerSecond,
+	)
+
+	fmt.Printf(
+		"Final values per identifier: %+v\n",
+		identifierCounts,
 	)
 }
