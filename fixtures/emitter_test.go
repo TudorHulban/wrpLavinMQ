@@ -3,9 +3,54 @@ package fixtures
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 )
+
+type Metrics map[IdentifierEmitter]float64
+
+func NewMetrics() *Metrics {
+	metrics := make(map[IdentifierEmitter]float64)
+
+	return (*Metrics)(&metrics)
+}
+
+func (m Metrics) String() string {
+	currentTime := time.Now().Format("2006-01-02 15:04:05.000")
+
+	var builder strings.Builder
+
+	fmt.Fprintf(
+		&builder,
+		"Metrics (%s)\n",
+		currentTime,
+	)
+
+	if len(m) == 0 {
+		return builder.String()
+	}
+
+	keys := make([]IdentifierEmitter, 0, len(m))
+
+	for k := range m {
+		keys = append(keys, k)
+	}
+
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
+	for _, k := range keys {
+		fmt.Fprintf(
+			&builder,
+			"%d: %.2f\n",
+			k,
+			m[k],
+		)
+	}
+
+	return builder.String()
+}
 
 type Value struct {
 	valueNext     *Value
@@ -86,13 +131,13 @@ func (v *Values) GetMetric(forList IdentifierEmitter) float64 {
 
 func TestEmitter(t *testing.T) {
 	e := Emitter{
-		timeInterval:   10 * time.Millisecond,
+		timeInterval:   3 * time.Millisecond,
 		numberEmitters: 30,
 	}
 
 	values := NewValues(100)
 
-	metrics := make(map[IdentifierEmitter]float64)
+	metrics := NewMetrics()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -104,15 +149,24 @@ func TestEmitter(t *testing.T) {
 	startTime := time.Now()
 	var messageCount uint
 
+	ticker := time.NewTicker(400 * time.Millisecond)
+	defer ticker.Stop()
+
 	for event := range chRead {
 		values.AddValue(
 			event.Identifier,
 			event.Payload,
 		)
 
-		metrics[event.Identifier] = values.GetMetric(event.Identifier)
+		(*metrics)[event.Identifier] = values.GetMetric(event.Identifier)
 
 		messageCount++
+
+		select {
+		case <-ticker.C:
+			fmt.Println(metrics)
+		default:
+		}
 	}
 
 	elapsedTime := time.Since(startTime).Seconds()
