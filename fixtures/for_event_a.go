@@ -36,7 +36,8 @@ func ForEventA(howMany uint16) [][]byte {
 		eventSerialized, _ := events.EventA{
 			MetricLabel: metricLabel,
 			Value:       1,
-		}.AsJSON()
+		}.
+			AsJSON()
 
 		result[ix] = eventSerialized
 	}
